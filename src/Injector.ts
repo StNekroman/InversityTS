@@ -17,7 +17,7 @@ interface TokenMetadata<T> {
 export class Injector {
 
   public static readonly root = new Injector();
-  public static currentInjector : Injector;
+  private static currentInjector : Injector;
   public static getCurrentInjector() : Injector {
     if (Injector.currentInjector) {
       return Injector.currentInjector;

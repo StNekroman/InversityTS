@@ -27,7 +27,9 @@
     "build": "tsc",
     "test": "yarn build & jest",
     "debugTests": "jest -i",
-    "lint": "eslint ./src"
+    "lint": "eslint ./src",
+    "npm-publish": "npm publish --access public",
+    "npm-publish-github": "npm publish --access public --registry=https://npm.pkg.github.com"
   },
   "dependencies": {
     "@stnekroman/tstools": "0.0.7"

@@ -1,5 +1,6 @@
 import { Functions, Objects, Types } from "@stnekroman/tstools";
 import { Injector } from '../Injector';
+import { InjectorError } from "../InjectorError";
 import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadata";
 import { TokenType } from "../TokenType";
 
@@ -55,10 +56,14 @@ export function Injectable<T>(optionsOrToken ?: {
 
     return optionsOrToken;
   } else {
-    // class decorator version
     return (target: any, methodName ?: string | symbol, descriptor ?: PropertyDescriptor) => {
       if (methodName === undefined) {
         // class decorator
+
+        if (arguments.length === 1) {
+
+        }
+
         const opts = optionsOrToken as {
           injector ?: Injector,
           type ?: TokenType,

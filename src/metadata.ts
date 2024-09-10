@@ -30,6 +30,10 @@ export function getOrCreateInversityMethodMetadata<C>(prototype: any) : MethodMe
   });
 }
 
+export function getInversityClassMetadata<C>(prototype: any) : InversityMetadata<C> {
+  return prototype[InversityMetadataSymbol];
+}
+
 export function getOrCreateInversityClassMetadata<C>(prototype: any) : InversityMetadata<C> {
   const metadata : InversityMetadata<unknown> = prototype[InversityMetadataSymbol] ?? (prototype[InversityMetadataSymbol] = {
     deferInstanceInjectables: Object.create(null)

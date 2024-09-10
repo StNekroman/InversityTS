@@ -9,11 +9,12 @@ export function Configuration<C>() {
   return <CTR extends Types.Newable<C>>(ctr: CTR) : CTR => {
     ctr = SingletonGuard<C>()(ctr) as CTR; // make sure that class is singleton
 
+    const inversityMetadata : InversityMetadata<C> = getOrCreateInversityClassMetadata<C>(ctr.prototype);
+
     ctr = class extends (ctr as Types.Newable) {
       constructor() {
         super();
 
-        const inversityMetadata : InversityMetadata<C> = getOrCreateInversityClassMetadata<C>(ctr.prototype as Function as Types.Newable<C>);
         Objects.forEach(inversityMetadata.deferInstanceInjectables, (methodName, [token, options]) => {
           if (options.type ===  TokenType.FACTORY) {
             const methodMetadata : MethodMetadata | undefined = getInversityMethodMetadata((this as any)[methodName])
