@@ -1,0 +1,47 @@
+{
+  "name": "@stnekroman/inversityts",
+  "version": "0.0.1",
+  "description": "IoC library for TypeScript",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "author": {
+    "name": "StNekroman",
+    "email": "StNekroman@gmail.com"
+  },
+  "repository": {
+    "url": "git+https://github.com/StNekroman/InversityTS.git"
+  },
+  "keywords": [
+    "TypeScript",
+    "TS",
+    "InversityTS",
+    "inversity"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "test": "yarn build & jest",
+    "debugTests": "jest -i",
+    "lint": "eslint ./src"
+  },
+  "dependencies": {
+    "@stnekroman/tstools": "0.0.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@jest/globals": "29.7.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "20.14.14",
+    "eslint": "^9.9.0",
+    "jest": "29.7.0",
+    "rimraf": "5.0.10",
+    "ts-jest": "29.2.4",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
+  }
+}
