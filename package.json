@@ -1,9 +1,9 @@
 {
   "name": "@stnekroman/inversityts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "IoC library for TypeScript",
   "license": "MIT",
-  "main": "./dist/index.js",
+  "main": "./dist/src/index.js",
   "types": "./src/index.ts",
   "author": {
     "name": "StNekroman",
@@ -19,7 +19,7 @@
     "inversity"
   ],
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/src/index.js"
   },
   "scripts": {
     "clean": "rimraf dist",

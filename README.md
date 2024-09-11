@@ -42,7 +42,7 @@ yarn
 yarn add @stnekroman/inversityts
 ```
 
-And in your tsconfig.json you need to set
+And in your tsconfig.json you need to set (if you want to use decorators)
 
 ```json
 {
