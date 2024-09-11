@@ -32,7 +32,7 @@ export class Injector {
 
   constructor(private readonly parent ?: Injector) {}
 
-  public register<T>(token : unknown, metadata : TokenMetadata<T>) {
+  public register<T>(token : NonNullable<unknown>, metadata : TokenMetadata<T>) {
     this.metadatas.set(token, metadata);
   }
 

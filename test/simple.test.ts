@@ -56,9 +56,12 @@ describe("Injectable", () => {
 
   test("manual injector", () => {
 
-      @Injectable({
+      @Injectable(undefined, {
         injector: testInjector
       })
+      /*@Injectable.Class(undefined, {
+        injector: testInjector
+      })*/
       class SimpleService {
         public a = "aval";
       }

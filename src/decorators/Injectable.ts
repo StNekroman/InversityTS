@@ -6,93 +6,85 @@ import { TokenType } from "../TokenType";
 
 
 export function Injectable<T>(token: T, options : {injector ?: Injector, tags ?: string[], class : Types.Newable}) : T;
-export function Injectable<T, ARGS extends unknown[]>(token: T, options : {injector ?: Injector, tags ?: string[], factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: unknown[]}) : T;
+export function Injectable<T,ARGS extends unknown[]>(token: T, options : {injector ?: Injector, tags ?: string[], factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: unknown[]}) : T;
 export function Injectable<T>(token: T, options : {injector ?: Injector, tags ?: string[], value : unknown}) : T;
 
-export function Injectable(options ?: {injector ?: Injector, tags ?: string[]}) : ClassDecorator;
-export function Injectable<T>(token: T, options ?: {injector ?: Injector, tags ?: string[]}) : MethodDecorator;
+export function Injectable<T>(token?: T, options ?: {injector ?: Injector, tags ?: string[]}) : ClassDecorator & MethodDecorator;
 
-export function Injectable<T>(optionsOrToken ?: {
-                                injector ?: Injector,
-                                type ?: TokenType,
-                                tags ?: string[]
-                              } | T,
-                              options ?: {
-                                injector ?: Injector,
-                                tags ?: string[],
-                                class ?: Types.Newable,
-                                factory ?: Functions.ArgsFunction<unknown[], unknown>,
-                                dependencies?: unknown[],
-                                value ?: unknown
-                              }) {
-  if (arguments.length  > 1) {
-    const injector = options!.injector ?? Injector.getCurrentInjector();
-    let tokenType : TokenType;
-    if (options!.class !== undefined) {
-      tokenType = TokenType.CLASS;
-    } else if (options!.factory !== undefined) {
-      tokenType = TokenType.FACTORY;
-    } else if (options!.value !== undefined) {
-      tokenType = TokenType.VALUE;
-    } else {
-      // method decorator version
 
-      return (target: any, methodName: keyof typeof target, descriptor: TypedPropertyDescriptor<any>) => {
-        handleInjectableMethodDecorator(target, methodName, descriptor, optionsOrToken, injector, options!.tags);
-      };
-    }
 
-    // function version
-    injector.register(optionsOrToken, {
-      type: tokenType,
-      tags: options!.tags,
+export function Injectable<T>(token : T | undefined, options ?: {
+  injector ?: Injector,
+  tags ?: string[],
+  class ?: Types.Newable,
+  factory ?: Functions.ArgsFunction<unknown[], unknown>,
+  dependencies?: unknown[],
+  value ?: unknown
+}) : T | ClassDecorator | MethodDecorator {
+  const injector = options?.injector ?? Injector.getCurrentInjector();
+  if (options && options.class && Objects.isNotNullOrUndefined(token)) {
+    injector.register(token, {
+      type: TokenType.CLASS,
+      tags: options.tags,
       provider: {
-        class: options!.class,
-        factory: options!.factory,
-        value: options!.value,
-        dependencies: options!.dependencies
+        class: options.class
       }
     });
-
-    return optionsOrToken;
+    return token;
+  } else if (options && options.factory && Objects.isNotNullOrUndefined(token)) {
+    injector.register(token, {
+      type: TokenType.FACTORY,
+      tags: options.tags,
+      provider: {
+        factory: options.factory,
+        dependencies: options.dependencies
+      }
+    });
+    return token;
+  } else if (options && options.value && Objects.isNotNullOrUndefined(token)) {
+    injector.register(token, {
+      type: TokenType.VALUE,
+      tags: options.tags,
+      provider: {
+        value: options.value,
+      }
+    });
+    return token;
   } else {
     return (target: any, methodName ?: string | symbol, descriptor ?: PropertyDescriptor) => {
       if (methodName === undefined) {
         // class decorator
-
-        if (arguments.length === 1) {
-
-        }
-
-        const opts = optionsOrToken as {
-          injector ?: Injector,
-          type ?: TokenType,
-          tags ?: string[]
-        } | undefined;
-        handleInjectableClassDecorator(opts?.type ?? TokenType.CLASS, target, opts?.injector, opts?.tags);
-      } else {
+        injector.register(token ?? target, {
+          type: TokenType.CLASS,
+          tags: options?.tags,
+          provider: {
+            class: target
+          }
+        });
+      } else if (Objects.isNotNullOrUndefined(token)) {
         // method decorator
-        handleInjectableMethodDecorator(target, methodName, descriptor!, optionsOrToken, undefined, undefined);
+        handleInjectableMethodDecorator(target, methodName, descriptor!, token, injector, options?.tags);
+      } else {
+        throw new InjectorError("Wrong usage - token not specified for factory injectable.");
       }
     };
   }
 }
 
-function handleInjectableClassDecorator(tokenType :  TokenType, target: any, injector?: Injector, tags ?: string[]) {
-  injector ??= Injector.getCurrentInjector();
-  injector.register(target, {
-    type: tokenType,
-    tags: tags,
-    provider: {
-      class: tokenType === TokenType.CLASS ? target as Types.Newable : undefined,
-      factory: tokenType === TokenType.FACTORY ? target as Functions.ArgsFunction<unknown[], unknown> : undefined,
-      value: tokenType === TokenType.VALUE ? target : undefined
-    }
-  });
+Injectable.Class = function<T>(token?: T, options ?: {injector ?: Injector, tags ?: string[]}) : ClassDecorator {
+  const injector = options?.injector ?? Injector.getCurrentInjector();
+  return (target: any) => {
+    injector.register(token ?? target, {
+      type: TokenType.CLASS,
+      tags: options?.tags,
+      provider: {
+        class: target
+      }
+    });
+  };
 }
 
-function handleInjectableMethodDecorator(target: any, methodName: keyof typeof target, descriptor : PropertyDescriptor, token: unknown, injector?: Injector, tags ?: string[]) {
-  injector ??= Injector.getCurrentInjector();
+function handleInjectableMethodDecorator(target: any, methodName: keyof typeof target, descriptor : PropertyDescriptor, token: NonNullable<unknown>, injector: Injector, tags ?: string[]) {
   if (Objects.isFunction(target)) {
     // static method
     injector.register(token, {
