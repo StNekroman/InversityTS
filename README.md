@@ -299,6 +299,8 @@ injector.runInContext(() => {
 
 this will temporary bind `injector` - from which you called `runInContext` as currentInjector, which will be available via `Injector.getCurrentInjector()` call.
 
+For more examples - look at [tests](test)
+
 ---
 
 License MIT

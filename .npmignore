@@ -5,3 +5,5 @@ examples
 tsconfig.json
 jest.config.js
 eslint.config.mjs
+dist/**/*.map
+s
