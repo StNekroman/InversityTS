@@ -1,5 +1,4 @@
 import { Objects, SingletonGuard, Types } from "@stnekroman/tstools";
-import { Injector } from "../Injector";
 import { InjectorError } from "../InjectorError";
 import { getInversityMethodMetadata, getOrCreateInversityClassMetadata, InversityMetadata, MethodMetadata } from '../metadata';
 import { TokenType } from "../TokenType";

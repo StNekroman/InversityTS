@@ -59,9 +59,6 @@ describe("Injectable", () => {
       @Injectable(undefined, {
         injector: testInjector
       })
-      /*@Injectable.Class(undefined, {
-        injector: testInjector
-      })*/
       class SimpleService {
         public a = "aval";
       }
@@ -102,7 +99,7 @@ describe("Injectable", () => {
       }).toThrow();
   });
 
-  /*test("hide impls from eyes", () => {
+  test("hide impls from eyes", () => {
     testInjector.runInContext(() => {
       const TYPES = {
         SERVICE_A: Symbol("ServiceA"),
@@ -112,8 +109,9 @@ describe("Injectable", () => {
       interface ServiceA {getTextA() : string;}
       interface ServiceB {getTextB() : string;}
 
-      @Injectable()
+      @Injectable(TYPES.SERVICE_A)
       class ServiceAImpl implements ServiceA {getTextA() {return "a"; }}
+      @Injectable(TYPES.SERVICE_B)
       class ServiceBImpl implements ServiceB {getTextB() {return "b"; }}
 
       class WithDependencies {
@@ -130,5 +128,5 @@ describe("Injectable", () => {
 
       expect(Injector.getCurrentInjector().createInstance(WithDependencies)).toBeDefined();
     });
-  });*/
+  });
 });

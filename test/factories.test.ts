@@ -33,11 +33,11 @@ describe("Injectable", () => {
 
   test("nested factory token", () => {
     testInjector.runInContext(() => {
-      const valueToken = Injectable("FIRST_TOKEN", {
+      const valueToken = Injectable(Symbol("FIRST_TOKEN"), {
         value: "aval"
       });
 
-      const factoryToken = Injectable("SECOND_TOKEN", {
+      const factoryToken = Injectable(Symbol("SECOND_TOKEN"), {
         dependencies: [valueToken],
         factory: (val: string) => val + "_bval"
       });

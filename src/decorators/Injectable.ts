@@ -5,17 +5,18 @@ import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadat
 import { TokenType } from "../TokenType";
 
 
-export function Injectable<T>(token: T, options : {injector ?: Injector, tags ?: string[], class : Types.Newable}) : T;
-export function Injectable<T,ARGS extends unknown[]>(token: T, options : {injector ?: Injector, tags ?: string[], factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: unknown[]}) : T;
-export function Injectable<T>(token: T, options : {injector ?: Injector, tags ?: string[], value : unknown}) : T;
+type InjectableOptions = {
+  injector ?: Injector;
+  tags ?: string[]
+}
 
-export function Injectable<T>(token?: T, options ?: {injector ?: Injector, tags ?: string[]}) : ClassDecorator & MethodDecorator;
+export function Injectable<T>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
+export function Injectable<T,ARGS extends unknown[]>(token: T, options : InjectableOptions & {factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: unknown[]}) : T;
+export function Injectable<T>(token: T, options : InjectableOptions & {value : unknown}) : T;
 
+export function Injectable<T>(token?: T, options ?: InjectableOptions) : ClassDecorator & MethodDecorator;
 
-
-export function Injectable<T>(token : T | undefined, options ?: {
-  injector ?: Injector,
-  tags ?: string[],
+export function Injectable<T>(token : T | undefined, options ?: InjectableOptions & {
   class ?: Types.Newable,
   factory ?: Functions.ArgsFunction<unknown[], unknown>,
   dependencies?: unknown[],
@@ -69,19 +70,6 @@ export function Injectable<T>(token : T | undefined, options ?: {
       }
     };
   }
-}
-
-Injectable.Class = function<T>(token?: T, options ?: {injector ?: Injector, tags ?: string[]}) : ClassDecorator {
-  const injector = options?.injector ?? Injector.getCurrentInjector();
-  return (target: any) => {
-    injector.register(token ?? target, {
-      type: TokenType.CLASS,
-      tags: options?.tags,
-      provider: {
-        class: target
-      }
-    });
-  };
 }
 
 function handleInjectableMethodDecorator(target: any, methodName: keyof typeof target, descriptor : PropertyDescriptor, token: NonNullable<unknown>, injector: Injector, tags ?: string[]) {
