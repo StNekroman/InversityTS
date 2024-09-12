@@ -1,3 +1,3 @@
 export enum TokenType {
-  CLASS, FACTORY, VALUE
+  CLASS, FACTORY, VALUE, REDIRECT
 }

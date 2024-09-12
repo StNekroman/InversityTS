@@ -81,6 +81,7 @@ Can be called:
 |           | \*`tags` - array of string tags, to mark this injectable                                                                   |
 |           | \*`class` - (for function call only) specifies which class to use to generate new instance                                 |
 |           | \*`value` - (for function call only) specifies static value, which will be used as instance                                |
+|           | \*`redirect` - (for function call only) specifies another token, which will be used instead                                |
 |           | \*`factory` - (for function call only) specifies factory function which will be used to generate new instance              |
 |           | \*`dependencies` - (for function call only) additional possible input dependenes for `factory` function - list of `token`s |
 

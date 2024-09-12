@@ -13,6 +13,7 @@ type InjectableOptions = {
 export function Injectable<T>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
 export function Injectable<T,ARGS extends unknown[]>(token: T, options : InjectableOptions & {factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: unknown[]}) : T;
 export function Injectable<T>(token: T, options : InjectableOptions & {value : unknown}) : T;
+export function Injectable<T>(token: T, options : InjectableOptions & {redirect : unknown}) : T;
 
 export function Injectable<T>(token?: T, options ?: InjectableOptions) : ClassDecorator & MethodDecorator;
 
@@ -20,7 +21,8 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
   class ?: Types.Newable,
   factory ?: Functions.ArgsFunction<unknown[], unknown>,
   dependencies?: unknown[],
-  value ?: unknown
+  value ?: unknown,
+  redirect ?: unknown
 }) : T | ClassDecorator | MethodDecorator {
   const injector = options?.injector ?? Injector.getCurrentInjector();
   if (options && options.class && Objects.isNotNullOrUndefined(token)) {
@@ -47,7 +49,16 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
       type: TokenType.VALUE,
       tags: options.tags,
       provider: {
-        value: options.value,
+        value: options.value
+      }
+    });
+    return token;
+  } else if (options && options.redirect && Objects.isNotNullOrUndefined(token)) {
+    injector.register(token, {
+      type: TokenType.REDIRECT,
+      tags: options.tags,
+      provider: {
+        redirect: options.redirect
       }
     });
     return token;

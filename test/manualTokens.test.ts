@@ -128,4 +128,5 @@ describe("manual tokens", () => {
       expect(testInjector.createInstance(WithDependencies)).toBeDefined();
     });
   });
+
 });

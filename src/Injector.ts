@@ -10,7 +10,8 @@ interface TokenMetadata<T> {
     class ?: Types.Newable<T>;
     factory ?: Functions.ArgsFunction<unknown[], T>;
     dependencies ?: unknown[];
-    value ?: T
+    value ?: T;
+    redirect ?: unknown;
   }
 }
 
@@ -36,7 +37,7 @@ export class Injector {
     this.metadatas.set(token, metadata);
   }
 
-  public get<T>(token: Types.Newable<T> | Functions.ArgsFunction<unknown[], T> | T) : T {
+  public get<T>(token: unknown) : T {
     let instance = this.instances.get(token) as T;
     if (instance !== undefined) {
       return instance;
@@ -65,6 +66,8 @@ export class Injector {
         return this.createInstance(metadata.provider.class!, metadata.type);
       case TokenType.FACTORY:
         return this.createInstance(metadata.provider.factory!, metadata.type, metadata.provider.dependencies);
+      case TokenType.REDIRECT:
+        return this.get(metadata.provider.redirect);
       case TokenType.VALUE:
       default:
         return metadata.provider.value!;
