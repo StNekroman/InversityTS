@@ -1,6 +1,6 @@
 {
   "name": "@stnekroman/inversityts",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "IoC library for TypeScript",
   "license": "MIT",
   "main": "./dist/src/index.js",
@@ -16,7 +16,10 @@
     "TypeScript",
     "TS",
     "InversityTS",
-    "inversity"
+    "inversity",
+    "IoC",
+    "DI",
+    "Dependency Injection"
   ],
   "exports": {
     ".": "./dist/src/index.js"

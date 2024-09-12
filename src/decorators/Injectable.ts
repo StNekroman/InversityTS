@@ -1,4 +1,5 @@
 import { Functions, Objects, Types } from "@stnekroman/tstools";
+import { ForwardRef } from '../ForwardRef';
 import { Injector } from '../Injector';
 import { InjectorError } from "../InjectorError";
 import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadata";
@@ -7,7 +8,8 @@ import { TokenType } from "../TokenType";
 
 type InjectableOptions = {
   injector ?: Injector;
-  tags ?: string[]
+  tags ?: string[];
+  multi ?: boolean;
 }
 
 export function Injectable<T>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
@@ -29,6 +31,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     injector.register(token, {
       type: TokenType.CLASS,
       tags: options.tags,
+      multi: options.multi,
       provider: {
         class: options.class
       }
@@ -38,6 +41,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     injector.register(token, {
       type: TokenType.FACTORY,
       tags: options.tags,
+      multi: options.multi,
       provider: {
         factory: options.factory,
         dependencies: options.dependencies
@@ -48,6 +52,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     injector.register(token, {
       type: TokenType.VALUE,
       tags: options.tags,
+      multi: options.multi,
       provider: {
         value: options.value
       }
@@ -57,6 +62,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     injector.register(token, {
       type: TokenType.REDIRECT,
       tags: options.tags,
+      multi: options.multi,
       provider: {
         redirect: options.redirect
       }
@@ -69,13 +75,14 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
         injector.register(token ?? target, {
           type: TokenType.CLASS,
           tags: options?.tags,
+          multi: options?.multi,
           provider: {
             class: target
           }
         });
       } else if (Objects.isNotNullOrUndefined(token)) {
         // method decorator
-        handleInjectableMethodDecorator(target, methodName, descriptor!, token, injector, options?.tags);
+        handleInjectableMethodDecorator(target, methodName, descriptor!, token, options);
       } else {
         throw new InjectorError("Wrong usage - token not specified for factory injectable.");
       }
@@ -83,12 +90,16 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
   }
 }
 
-function handleInjectableMethodDecorator(target: any, methodName: keyof typeof target, descriptor : PropertyDescriptor, token: NonNullable<unknown>, injector: Injector, tags ?: string[]) {
+function handleInjectableMethodDecorator(target: any, methodName: keyof typeof target, descriptor : PropertyDescriptor, 
+      token: NonNullable<unknown>,
+      options ?: InjectableOptions) {
+  const injector = options?.injector ?? Injector.getCurrentInjector();
   if (Objects.isFunction(target)) {
     // static method
     injector.register(token, {
       type: TokenType.FACTORY,
-      tags: tags,
+      tags: options?.tags,
+      multi: options?.multi,
       provider: {
         factory: descriptor.value as Functions.ArgsFunction<unknown[], unknown>
       }
@@ -97,8 +108,9 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
     const inversityMetadata : InversityMetadata<typeof target> = getOrCreateInversityClassMetadata(target);
     inversityMetadata.deferInstanceInjectables[methodName] = [token, {
       type: TokenType.FACTORY,
-      tags: tags,
-      injector: injector
+      tags: options?.tags,
+      injector: injector,
+      multi: options?.multi
     }];
   }
 }

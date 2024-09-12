@@ -7,6 +7,7 @@ Injectors serve function of IoC containers.
 Injectors have hierarchy - everything known on parent level will be available for DI at child level.  
 Child injectors can override parent tokens for his level and for nested, if any.  
 Injectors can be detached from root.  
+Tokens can be multiple in scope of one injector - you can request singleton instance from injectable or all, it it's multi.  
 This library doesn't use reflect-metadata, the solution is prototype-based.
 
 ## Table of Contents
@@ -19,6 +20,8 @@ This library doesn't use reflect-metadata, the solution is prototype-based.
   - [@Inject.Param](#injectparam)
   - [Injector](#injector)
   - [@Configuration](#configuration)
+  - [ForwardRef](#forwardref)
+  - [Token](#token)
 - [Usage examples](#usage-examples)
   - [Inject Example](#inject-example)
   - [constructor has dependencies example](#constructor-has-dependencies-example)
@@ -27,6 +30,8 @@ This library doesn't use reflect-metadata, the solution is prototype-based.
   - [Factories example](#factories-example)
   - [Injectors hierarchy example](#injectors-hierarchy-example)
   - [Injector context example](#injector-context-example)
+  - [token redirect](#token-redirect)
+  - [multiple tokens](#multiple-tokens)
 
 ## Installation
 
@@ -78,7 +83,7 @@ Can be called:
 | `token`   | Token for new injectable                                                                                                   |
 | `options` | Optional options structure, which may contain:                                                                             |
 |           | \* `injector` - direct ref to injector to use                                                                              |
-|           | \*`tags` - array of string tags, to mark this injectable                                                                   |
+|           | \*`tags` - reversed for future, not in use currently                                                                       |
 |           | \*`class` - (for function call only) specifies which class to use to generate new instance                                 |
 |           | \*`value` - (for function call only) specifies static value, which will be used as instance                                |
 |           | \*`redirect` - (for function call only) specifies another token, which will be used instead                                |
@@ -120,6 +125,18 @@ IoC container, used to register, get and create injectable instances against giv
 Annotation for class, which may product injectables via methods (static and/or non-static) as factory methods.  
 Doesn't contain any input parameters so far. But it required for method-based injectable processing.  
 It's singleton - only one instance of such class may be created.
+
+### ForwardRef
+
+Used for redirect tokens to pass token, which is not yet constucted.
+
+### Token
+
+In case cases you might want to wrap your token to `Token` wrapper.  
+Cases are:
+
+- passing dependency to list of `dependencies` for raw factory function with `multi: true`
+- using this wrapper to pass options (like `multi: true`) to direct `Inject` call.
 
 ## Usage examples
 
@@ -301,6 +318,91 @@ injector.runInContext(() => {
 this will temporary bind `injector` - from which you called `runInContext` as currentInjector, which will be available via `Injector.getCurrentInjector()` call.
 
 For more examples - look at [tests](test)
+
+### token redirect
+
+When want/need re-use another token under different name.
+
+```TypeScript
+const TOKEN = Symbol("TOKEN");
+const REDIRECT_TOKEN = Symbol("REDIRECT_TOKEN");
+
+Injectable(REDIRECT_TOKEN, {
+  redirect: TOKEN
+});
+
+@Injectable(TOKEN)
+class SimpleService {
+  public a = "aval";
+}
+
+class WithDependencies {
+  public readonly simple : SimpleService = Inject(TOKEN);
+  public readonly simple2 : SimpleService = Inject(REDIRECT_TOKEN);
+}
+```
+
+### multiple tokens
+
+Watch options `{multi: true}` - if specified - all created instances will be returned inside array, even if there is only one instance.  
+When not passing `multi: true` (so you expect only one instance), but there are many inject candidates - exception will be thrown in runtime.
+
+```TypeScript
+const TEST_TOKEN = Symbol("TEST_TOKEN");
+Injectable(TEST_TOKEN, {
+  value: "aval",
+  multi: true
+});
+Injectable(TEST_TOKEN, {
+  value: "bval",
+  multi: true
+});
+
+class WithDependencies {
+  constructor(
+    @Inject.Param(TEST_TOKEN, {multi: true}) public readonly values : string[]
+  ) {...}
+}
+```
+
+### multiple tokens - service handlers use-case
+
+Want to have set of services/handlers (hightly lickely with common interface), which can be injectables, which can be used separately.  
+But, additionall, can be collected somewhere in single array.
+
+```TypeScript
+interface Handler {
+  handle() : boolean;
+}
+
+Injectable("magicHandler", { // common token, which is multi
+  redirect: new ForwardRef(() => ServiceHandlerA),
+  multi: true
+});
+@Injectable() // individual injectable
+class ServiceHandlerA implements Handler {
+  public handle() : boolean {
+    return true;
+  }
+}
+
+Injectable("magicHandler", {
+  redirect: new ForwardRef(() => ServiceHandlerA),
+  multi: true
+});
+@Injectable()
+class ServiceHandlerB implements Handler {
+  public handle() : boolean {
+    return false;
+  }
+}
+
+class WithDependencies {
+  constructor(
+    @Inject.Param("magicHandler", {multi: true}) public readonly handlers : Handler[]
+  ) {...}
+}
+```
 
 ---
 

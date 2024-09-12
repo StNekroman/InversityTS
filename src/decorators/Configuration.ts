@@ -20,6 +20,7 @@ export function Configuration<C>() {
             Injectable(token, {
               injector: options.injector,
               tags: options.tags,
+              multi: options.multi,
               factory: (this[methodName as keyof ThisType<C>] as Function).bind(this),
               dependencies: methodMetadata?.parameters ?? []
             });

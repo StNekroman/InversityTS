@@ -1,11 +1,14 @@
 import { Functions, Objects, Types } from "@stnekroman/tstools";
+import { ForwardRef } from "./ForwardRef";
 import { InjectorError } from "./InjectorError";
 import { getInversityMethodMetadata } from './metadata';
+import { Token } from './Token';
 import { TokenType } from "./TokenType";
 
 interface TokenMetadata<T> {
   type: TokenType;
   tags ?: string[];
+  multi ?: boolean;
   provider : {
     class ?: Types.Newable<T>;
     factory ?: Functions.ArgsFunction<unknown[], T>;
@@ -28,36 +31,72 @@ export class Injector {
     }
   }
 
-  private readonly metadatas = new Map<unknown, TokenMetadata<unknown>>();
-  private readonly instances = new Map<unknown, unknown>();
+  private readonly metadatas = new Map<unknown, TokenMetadata<unknown>[]>();
+  private readonly instances = new Map<unknown, unknown[]>();
 
   constructor(private readonly parent ?: Injector) {}
 
   public register<T>(token : NonNullable<unknown>, metadata : TokenMetadata<T>) {
-    this.metadatas.set(token, metadata);
+    if (!metadata.multi) {
+      this.metadatas.set(token, [metadata]);
+    } else {
+      let arr = this.metadatas.get(token);
+      if (arr === undefined) {
+        arr = [];
+        this.metadatas.set(token, arr);
+      }
+      arr.push(metadata);
+    }
   }
 
-  public get<T>(token: unknown) : T {
-    let instance = this.instances.get(token) as T;
-    if (instance !== undefined) {
-      return instance;
-    }
-    let metadata = this.metadatas.get(token) as TokenMetadata<T>;
-    if (metadata === undefined && this.parent) {
-      return this.parent.get<T>(token);
-    }
-    if (metadata !== undefined) {
-      instance = this.instantiateFromMetadata(metadata);
-      this.instances.set(token, instance);
-      return instance;
+  public get<T>(token: Token & {multi : false}) : T;
+  public get<T>(token: Token & {multi : true}) : T[];
+  public get<T>(token: unknown) : T;
+  get<T>(token: unknown | Token) : T | T[] {
+    const isMultiple = Injector.isMultiToken(token);
+    const tokenValue = Injector.getTokenValue(token);
+
+    let instances = this.instances.get(tokenValue) as T[] | undefined;
+    if (!instances || instances.length === 0) {
+      const metadatas = this.metadatas.get(tokenValue) as TokenMetadata<T>[] | undefined;
+      if (metadatas && metadatas.length > 0) {
+        instances = this.instantiateFromMetadatas(metadatas);
+        this.instances.set(tokenValue, instances);
+      } else if (this.parent && (metadatas === undefined || metadatas.length === 0)) {
+        if (isMultiple) {
+          instances = this.parent.get<T>(token);
+        } else {
+          instances = [this.parent.get<T>(token)];
+        }
+      }
     }
 
-    const tokenName = Objects.isFunction(token) ? token.name : (token as any).toString();
-    throw new InjectorError(`Unable instantiate token ${tokenName} - missing definition.`);
+    if (instances && instances.length > 0) {
+      if (isMultiple) {
+        return instances;
+      } else {
+        if (instances.length === 1) {
+          return instances[0];
+        } else {
+          throw new InjectorError(`More than one inject candidats for token ${Injector.makeTokenName(token)}`);
+        }
+      }
+    }
+
+    throw new InjectorError(`Unable instantiate token ${Injector.makeTokenName(token)} - missing definition.`);
   }
 
-  public getAll<R extends unknown[]>(tokens : unknown[]) : R {
+  private static makeTokenName(token: unknown | Token) : string {
+    const tokenValue = Injector.getTokenValue(token);
+    return Objects.isFunction(tokenValue) ? tokenValue.name : (tokenValue as any).toString();
+  }
+
+  public getAll<R extends unknown[]>(tokens : (unknown | Token)[]) : R {
     return tokens.map(t => this.get(t)) as R;
+  }
+
+  public instantiateFromMetadatas<T>(metadatas : TokenMetadata<T>[]) : T[] {
+    return metadatas.map(m => this.instantiateFromMetadata(m));
   }
 
   public instantiateFromMetadata<T>(metadata : TokenMetadata<T>) : T {
@@ -67,7 +106,8 @@ export class Injector {
       case TokenType.FACTORY:
         return this.createInstance(metadata.provider.factory!, metadata.type, metadata.provider.dependencies);
       case TokenType.REDIRECT:
-        return this.get(metadata.provider.redirect);
+        const toWhat = metadata.provider.redirect instanceof ForwardRef ? metadata.provider.redirect.provider() : metadata.provider.redirect;
+        return this.get(toWhat);
       case TokenType.VALUE:
       default:
         return metadata.provider.value!;
@@ -92,7 +132,7 @@ export class Injector {
     }
   }
   
-  private collectDependencies<T>(constructorOrFactory: Types.Newable<T> | Functions.ArgsFunction<unknown[], T>) : unknown[] {
+  private collectDependencies<T>(constructorOrFactory: Types.Newable<T> | Functions.ArgsFunction<unknown[], T>) : (unknown | Token)[] {
     const methodMetadata = getInversityMethodMetadata(constructorOrFactory);
     return methodMetadata?.parameters ?? [];
   }
@@ -107,5 +147,13 @@ export class Injector {
     } finally {
       Injector.currentInjector = prevInjector;
     }
+  }
+
+  private static isMultiToken(token : unknown | Token & {multi: boolean}) : token is Token & {multi: true} {
+    return token instanceof Token ? Boolean(token.multi) : false;
+  }
+
+  private static getTokenValue<T = unknown>(token : T | Token<T>) : T {
+    return token instanceof Token ? token.value : token;
   }
 }
