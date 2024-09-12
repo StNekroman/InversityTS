@@ -1,6 +1,6 @@
-import { Types } from "@stnekroman/tstools";
+import { Functions, Types } from "@stnekroman/tstools";
 import { Injector } from "../Injector";
-import { CONSTRUCTOR, getOrCreateInversityMethodMetadata, MethodMetadata } from '../metadata';
+import { getOrCreateInversityMethodMetadata, MethodMetadata } from '../metadata';
 
 
 export interface Inject {
@@ -14,7 +14,7 @@ export function Inject(token : unknown, injector = Injector.getCurrentInjector()
 }
 
 Inject.Param = <T extends {}>(token : T) => {
-  return function <C extends {}>(target: any, propertyKey : keyof C | typeof CONSTRUCTOR | undefined, parameterIndex : number) {
+  return function <C extends {}>(target: C, propertyKey : keyof C | undefined, parameterIndex : number) {
     const methodMetadata : MethodMetadata = getOrCreateInversityMethodMetadata(propertyKey ? target[propertyKey] : target);
     methodMetadata.parameters[parameterIndex] = token;
   };

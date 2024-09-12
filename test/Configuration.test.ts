@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test } from '@jest/globals';
 import { SingletonGuardError } from '@stnekroman/tstools';
 import { Configuration, Inject, Injectable, Injector } from "../src";
 
-describe("Injectable", () => {
+describe("Configuration", () => {
 
   let testInjector : Injector;
 

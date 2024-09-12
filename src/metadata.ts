@@ -1,7 +1,6 @@
 import { Injector } from "./Injector";
 import { TokenType } from "./TokenType";
 
-export const CONSTRUCTOR = "constructor";
 
 export type deferInstancePair = [unknown, {
   type: TokenType;

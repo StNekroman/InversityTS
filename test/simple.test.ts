@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import { Inject, Injectable, Injector } from "../src";
 
-describe("Injectable", () => {
+describe("simple tests", () => {
 
   let testInjector : Injector;
 
