@@ -1,5 +1,4 @@
 import { Functions, Objects, Types } from "@stnekroman/tstools";
-import { ForwardRef } from "./ForwardRef";
 import { InjectorError } from "./InjectorError";
 import { getInversityMethodMetadata } from './metadata';
 import { Token } from './Token';
@@ -15,7 +14,7 @@ export class Injector {
     return Injector.currentInjector ?? Injector.root;
   }
 
-  private readonly metadatas = new Map<unknown, TokenMetadata<unknown>[]>();
+  private readonly metadataCache = new Map<unknown, TokenMetadata<unknown>[]>();
   private readonly instances = new Map<unknown, unknown[]>();
 
   constructor(private readonly parent ?: Injector) {}
@@ -23,12 +22,12 @@ export class Injector {
   public register<T>(token : NonNullable<unknown>, options : TokenMetadataOpions<T>) {
     const metadata = new TokenMetadata(options);
     if (!metadata.multi) {
-      this.metadatas.set(token, [metadata]);
+      this.metadataCache.set(token, [metadata]);
     } else {
-      let arr = this.metadatas.get(token);
+      let arr = this.metadataCache.get(token);
       if (arr === undefined) {
         arr = [];
-        this.metadatas.set(token, arr);
+        this.metadataCache.set(token, arr);
       }
       arr.push(metadata);
     }
@@ -43,8 +42,9 @@ export class Injector {
 
     let instances = this.instances.get(tokenValue) as T[] | undefined;
     if (!instances || instances.length === 0) {
-      const metadatas = this.metadatas.get(tokenValue) as TokenMetadata<T>[] | undefined;
+      const metadatas = this.metadataCache.get(tokenValue) as TokenMetadata<T>[] | undefined;
       if (metadatas && metadatas.length > 0) {
+
         instances = this.instantiateFromMetadatas(metadatas);
         this.instances.set(tokenValue, instances);
       } else if (this.parent && (metadatas === undefined || metadatas.length === 0)) {
@@ -59,12 +59,10 @@ export class Injector {
     if (instances && instances.length > 0) {
       if (isMultiple) {
         return instances;
+      } else if (instances.length === 1) {
+        return instances[0];
       } else {
-        if (instances.length === 1) {
-          return instances[0];
-        } else {
-          throw new InjectorError(`More than one inject candidats for token ${Injector.makeTokenName(token)}`);
-        }
+        throw new InjectorError(`More than one inject candidats for token ${Injector.makeTokenName(token)}`);
       }
     }
 
@@ -81,22 +79,7 @@ export class Injector {
   }
 
   public instantiateFromMetadatas<T>(metadatas : TokenMetadata<T>[]) : T[] {
-    return metadatas.map(m => this.instantiateFromMetadata(m));
-  }
-
-  public instantiateFromMetadata<T>(metadata : TokenMetadata<T>) : T {
-    switch (metadata.type) {
-      case TokenType.CLASS:
-        return this.createInstance(metadata.provider.class!, metadata.type);
-      case TokenType.FACTORY:
-        return this.createInstance(metadata.provider.factory!, metadata.type, metadata.provider.dependencies);
-      case TokenType.REDIRECT:
-        const toWhat = metadata.provider.redirect instanceof ForwardRef ? metadata.provider.redirect.provider() : metadata.provider.redirect;
-        return this.get(toWhat);
-      case TokenType.VALUE:
-      default:
-        return metadata.provider.value!;
-    }
+    return metadatas.map(metadata => metadata.instantiate(this));
   }
 
   public createInstance<T>(constructor : Types.Newable<T>) : T;
