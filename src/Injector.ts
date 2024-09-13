@@ -3,32 +3,16 @@ import { ForwardRef } from "./ForwardRef";
 import { InjectorError } from "./InjectorError";
 import { getInversityMethodMetadata } from './metadata';
 import { Token } from './Token';
+import { TokenMetadata, TokenMetadataOpions } from "./TokenMetadata";
 import { TokenType } from "./TokenType";
 
-interface TokenMetadata<T> {
-  type: TokenType;
-  tags ?: string[];
-  multi ?: boolean;
-  provider : {
-    class ?: Types.Newable<T>;
-    factory ?: Functions.ArgsFunction<unknown[], T>;
-    dependencies ?: unknown[];
-    value ?: T;
-    redirect ?: unknown;
-  }
-}
 
 export class Injector {
 
   public static readonly root = new Injector();
   private static currentInjector : Injector;
   public static getCurrentInjector() : Injector {
-    if (Injector.currentInjector) {
-      return Injector.currentInjector;
-    } else {
-      //throw new Error("default injector call!");
-      return Injector.root;
-    }
+    return Injector.currentInjector ?? Injector.root;
   }
 
   private readonly metadatas = new Map<unknown, TokenMetadata<unknown>[]>();
@@ -36,7 +20,8 @@ export class Injector {
 
   constructor(private readonly parent ?: Injector) {}
 
-  public register<T>(token : NonNullable<unknown>, metadata : TokenMetadata<T>) {
+  public register<T>(token : NonNullable<unknown>, options : TokenMetadataOpions<T>) {
+    const metadata = new TokenMetadata(options);
     if (!metadata.multi) {
       this.metadatas.set(token, [metadata]);
     } else {
