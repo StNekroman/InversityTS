@@ -1,8 +1,8 @@
 import { Functions, Objects, Types } from "@stnekroman/tstools";
-import { ForwardRef } from '../ForwardRef';
 import { Injector } from '../Injector';
 import { InjectorError } from "../InjectorError";
 import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadata";
+import { TokenScope } from "../TokenMetadata";
 import { TokenType } from "../TokenType";
 
 
@@ -10,6 +10,7 @@ type InjectableOptions = {
   injector ?: Injector;
   tags ?: string[];
   multi ?: boolean;
+  scope ?: TokenScope;
 }
 
 export function Injectable<T>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
@@ -32,6 +33,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
       type: TokenType.CLASS,
       tags: options.tags,
       multi: options.multi,
+      scope: options.scope,
       provider: {
         class: options.class
       }
@@ -42,6 +44,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
       type: TokenType.FACTORY,
       tags: options.tags,
       multi: options.multi,
+      scope: options.scope,
       provider: {
         factory: options.factory,
         dependencies: options.dependencies
@@ -53,6 +56,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
       type: TokenType.VALUE,
       tags: options.tags,
       multi: options.multi,
+      scope: options.scope,
       provider: {
         value: options.value
       }
@@ -63,6 +67,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
       type: TokenType.REDIRECT,
       tags: options.tags,
       multi: options.multi,
+      scope: options.scope,
       provider: {
         redirect: options.redirect
       }
@@ -76,6 +81,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
           type: TokenType.CLASS,
           tags: options?.tags,
           multi: options?.multi,
+          scope: options?.scope,
           provider: {
             class: target
           }
@@ -100,6 +106,7 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
       type: TokenType.FACTORY,
       tags: options?.tags,
       multi: options?.multi,
+      scope: options?.scope,
       provider: {
         factory: descriptor.value as Functions.ArgsFunction<unknown[], unknown>
       }
@@ -110,7 +117,8 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
       type: TokenType.FACTORY,
       tags: options?.tags,
       injector: injector,
-      multi: options?.multi
+      multi: options?.multi,
+      scope: options?.scope
     }];
   }
 }

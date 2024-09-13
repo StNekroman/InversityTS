@@ -1,6 +1,7 @@
 import { Injector } from "./Injector";
 import { TokenType } from "./TokenType";
 import { Token } from './Token';
+import { TokenScope } from "./TokenMetadata";
 
 
 export type deferInstancePair = [unknown, {
@@ -8,6 +9,7 @@ export type deferInstancePair = [unknown, {
   tags?: string[];
   injector ?: Injector;
   multi ?: boolean;
+  scope ?: TokenScope;
 }];
 
 export interface InversityMetadata<C> {

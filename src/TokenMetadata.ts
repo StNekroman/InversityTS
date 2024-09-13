@@ -11,24 +11,44 @@ export interface TokenProvider<T> {
   redirect ?: unknown;
 }
 
+export type TokenScope = "singleton" | "prototype";
+
 export interface TokenMetadataOpions<T> {
   type: TokenType;
   tags ?: string[];
   multi ?: boolean;
+  scope ?: TokenScope;
   provider : TokenProvider<T>;
 }
 
 export class TokenMetadata<T> {
   public readonly type: TokenType;
   public readonly multi : boolean;
+  public readonly scope : TokenScope;
   public readonly tags ?: string[];
   public readonly provider : TokenProvider<T>;
+
+  private singletonInstance ?: T;
 
   constructor(options : TokenMetadataOpions<T>) {
     this.type = options.type;
     this.multi = Boolean(options.multi);
     this.tags = options.tags;
     this.provider = options.provider;
+    this.scope = options.scope ?? "singleton";
+  }
+
+  public get(injector : Injector) : T {
+    switch(this.scope) {
+      case "singleton":
+        if (!this.singletonInstance) {
+          this.singletonInstance = this.instantiate(injector);
+        }
+        return this.singletonInstance;
+      case "prototype":
+      default:
+        return this.instantiate(injector);
+    }
   }
 
   public instantiate(injector : Injector) : T {

@@ -15,7 +15,6 @@ export class Injector {
   }
 
   private readonly metadataCache = new Map<unknown, TokenMetadata<unknown>[]>();
-  private readonly instances = new Map<unknown, unknown[]>();
 
   constructor(private readonly parent ?: Injector) {}
 
@@ -37,22 +36,18 @@ export class Injector {
   public get<T>(token: Token & {multi : true}) : T[];
   public get<T>(token: unknown) : T;
   get<T>(token: unknown | Token) : T | T[] {
+    let instances :  T[] | undefined;
+
     const isMultiple = Injector.isMultiToken(token);
     const tokenValue = Injector.getTokenValue(token);
-
-    let instances = this.instances.get(tokenValue) as T[] | undefined;
-    if (!instances || instances.length === 0) {
-      const metadatas = this.metadataCache.get(tokenValue) as TokenMetadata<T>[] | undefined;
-      if (metadatas && metadatas.length > 0) {
-
-        instances = this.instantiateFromMetadatas(metadatas);
-        this.instances.set(tokenValue, instances);
-      } else if (this.parent && (metadatas === undefined || metadatas.length === 0)) {
-        if (isMultiple) {
-          instances = this.parent.get<T>(token);
-        } else {
-          instances = [this.parent.get<T>(token)];
-        }
+    const metadatas = this.metadataCache.get(tokenValue) as TokenMetadata<T>[] | undefined;
+    if (metadatas && metadatas.length > 0) {
+      instances = metadatas.map(metadata => metadata.get(this));
+    } else if (this.parent) {
+      if (isMultiple) {
+        instances = this.parent.get<T>(token);
+      } else {
+        instances = [this.parent.get<T>(token)];
       }
     }
 
@@ -65,7 +60,6 @@ export class Injector {
         throw new InjectorError(`More than one inject candidats for token ${Injector.makeTokenName(token)}`);
       }
     }
-
     throw new InjectorError(`Unable instantiate token ${Injector.makeTokenName(token)} - missing definition.`);
   }
 
@@ -76,10 +70,6 @@ export class Injector {
 
   public getAll<R extends unknown[]>(tokens : (unknown | Token)[]) : R {
     return tokens.map(t => this.get(t)) as R;
-  }
-
-  public instantiateFromMetadatas<T>(metadatas : TokenMetadata<T>[]) : T[] {
-    return metadatas.map(metadata => metadata.instantiate(this));
   }
 
   public createInstance<T>(constructor : Types.Newable<T>) : T;

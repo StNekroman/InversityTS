@@ -16,6 +16,7 @@ This library doesn't use reflect-metadata, the solution is prototype-based.
 - [Terminology](#terminology)
 - [API Overview](#api-overview)
   - [@Injectable](#injectable)
+  - [Scopes](#scopes)
   - [Inject](#inject)
   - [@Inject.Param](#injectparam)
   - [Injector](#injector)
@@ -89,6 +90,16 @@ Can be called:
 |           | \*`redirect` - (for function call only) specifies another token, which will be used instead                                |
 |           | \*`factory` - (for function call only) specifies factory function which will be used to generate new instance              |
 |           | \*`dependencies` - (for function call only) additional possible input dependenes for `factory` function - list of `token`s |
+|           | \*`scope` - indicates when to re-use existing instance, when - to create new                                               |
+
+### Scopes
+
+List of possible scopes:
+
+| Scope                 | Description                                                                      |
+| --------------------- | -------------------------------------------------------------------------------- |
+| `singleton` (default) | Only one instance is create for injectable, cached and shared for future injects |
+| `prototype`           | Each new inject call will cause new instance to be created                       |
 
 ### @Inject
 
