@@ -33,6 +33,7 @@ This library doesn't use reflect-metadata, the solution is prototype-based.
   - [Injector context example](#injector-context-example)
   - [token redirect](#token-redirect)
   - [multiple tokens](#multiple-tokens)
+  - [scopes](#scopes)
 
 ## Installation
 
@@ -96,10 +97,15 @@ Can be called:
 
 List of possible scopes:
 
-| Scope                 | Description                                                                      |
-| --------------------- | -------------------------------------------------------------------------------- |
-| `singleton` (default) | Only one instance is create for injectable, cached and shared for future injects |
-| `prototype`           | Each new inject call will cause new instance to be created                       |
+| Scope                 | Description                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `singleton` (default) | Only one instance is create for injectable, cached and shared for future injects                               |
+| `prototype`           | Each new inject call will cause new instance to be created                                                     |
+| `cache`               | Internal caching map will be used, you need only specify provider, which will provide string keys to that map. |
+|                       | On key change - new instance will be created. In order to active this scope mode you need just pass in         |
+|                       | a function `() => string`, cache key provider                                                                  |
+| `custom`              | That is possible to completely override logic of scoping and instances creation.                               |
+|                       | Via passing in class `extends ScopeProvider`.                                                                  |
 
 ### @Inject
 
@@ -413,6 +419,42 @@ class WithDependencies {
     @Inject.Param("magicHandler", {multi: true}) public readonly handlers : Handler[]
   ) {...}
 }
+```
+
+### scopes
+
+Prototype
+
+```TypeScript
+class SimpleService {}
+
+Injectable("TEST_TOKEN", {
+  scope: "prototype",
+  factory: () => new SimpleService()
+});
+
+const service1 : SimpleService = Inject("TEST_TOKEN");
+const service2 : SimpleService = Inject("TEST_TOKEN"); // prototype --> each time new instance
+```
+
+Caching
+
+```TypeScript
+class SimpleService {}
+
+let currentSessionId : string = "1"; // or requestId, or traceId, or whateverIdentifier
+
+Injectable("TEST_TOKEN", {
+  scope: () => currentSessionId,
+  factory: () => new SimpleService()
+});
+
+const service1 : SimpleService = Inject("TEST_TOKEN");
+const service2 : SimpleService = Inject("TEST_TOKEN"); // the same service should arrive, as currentSessionId unchanged
+currentSessionId = "2"; // new request, or session, or something
+const service3 : SimpleService = Inject("TEST_TOKEN");
+currentSessionId = "1";
+const service4 : SimpleService = Inject("TEST_TOKEN"); // reuse previous
 ```
 
 ---

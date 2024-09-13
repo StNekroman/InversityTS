@@ -651,10 +651,10 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
-"@stnekroman/tstools@0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@stnekroman/tstools/-/tstools-0.0.7.tgz#23c94ddfef4ffb2bca4b46532ceece9dc694fdf4"
-  integrity sha512-vxRn5gThRs+4F32xmxd/dL4arrTfYlZ7543E7WtS5K5N0z/Hf4erNfXYCPYjBvrcl1OFnLkamZh/PalqikUx2A==
+"@stnekroman/tstools@0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@stnekroman/tstools/-/tstools-0.0.8.tgz#7a1b49f47070dd5a1e78342acb5a2c9518b9736f"
+  integrity sha512-iRWtwHwB+tfzrfxpn/t4yC2hE8dXd7arj0wUOv6nWprjM4xoTvw6h7oWrswSwuH7L5mYXH12TL0E3JPrxbOfnA==
 
 "@types/babel__core@^7.1.14":
   version "7.20.5"
