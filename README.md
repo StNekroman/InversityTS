@@ -3,11 +3,19 @@
 # Lightweight IoC (Inversion of Control) and DI (Dependency Injection) library.
 
 Inspired by Angular and Spring Frameworks.  
-Injectors serve function of IoC containers.  
-Injectors have hierarchy - everything known on parent level will be available for DI at child level.  
-Child injectors can override parent tokens for his level and for nested, if any.  
-Injectors can be detached from root.  
-Tokens can be multiple in scope of one injector - you can request singleton instance from injectable or all, it it's multi.  
+Injectors serve function of IoC containers.
+
+### Features:
+
+- Injectors have hierarchy - everything known on parent level will be available for DI at child level.
+- Child injectors can override parent tokens for his level and for nested, if any.
+- Injectors can be detached from root.
+- Tokens can be multiple in scope of one injector - you can request singleton instance from injectable or all, it it's multi.
+- Injectables have scopes.
+- Has circular dependency detection
+- Supports @Configuration classes
+- Supprots different value providers for injectable
+
 This library doesn't use reflect-metadata, the solution is prototype-based.
 
 ## Table of Contents
