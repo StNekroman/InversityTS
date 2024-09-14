@@ -7,7 +7,7 @@ describe("manual tokens", () => {
   let testInjector : Injector;
 
   beforeEach(() => {
-    testInjector = new Injector();
+    testInjector = new Injector("test");
   });
 
   test("value token", () => {

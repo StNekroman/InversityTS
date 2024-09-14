@@ -1,11 +1,11 @@
 import { Injector } from "./Injector";
-import { TokenType } from "./TokenType";
+import { TokenProviderType } from "./TokenProviderType";
 import { Token } from './Token';
 import { TokenScope } from "./TokenMetadata";
 
 
 export type deferInstancePair = [unknown, {
-  type: TokenType;
+  type: TokenProviderType;
   tags?: string[];
   injector ?: Injector;
   multi ?: boolean;

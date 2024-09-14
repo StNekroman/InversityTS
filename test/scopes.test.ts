@@ -1,5 +1,6 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
+import { Functions } from '@stnekroman/tstools';
 import { Inject, Injectable, Injector, ScopeProvider } from "../src";
 
 describe("scopes", () => {
@@ -7,7 +8,7 @@ describe("scopes", () => {
   let testInjector : Injector;
 
   beforeEach(() => {
-    testInjector = new Injector();
+    testInjector = new Injector("test");
   });
 
   test("prototype", () => testInjector.runInContext(() => {
@@ -58,15 +59,13 @@ describe("scopes", () => {
 
     class SimpleService {}
 
-    let currentSessionId : string = "1"; // or requestId, or traceId, or whateverIdentifier
-
     Injectable("TEST_TOKEN", {
       scope: class <T> extends ScopeProvider<T> { // this is singleton impl
         private instance ?: T;
-        public override get(injector: Injector): T {
+        public override get(createInstanceCallback : Functions.Provider<T>): T {
           // here you can do whatever you want
           if (!this.instance) {
-            this.instance = this.metadata.instantiate(injector);
+            this.instance = createInstanceCallback();
           }
           return this.instance; // you need return created instance
         }

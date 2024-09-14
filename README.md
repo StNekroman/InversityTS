@@ -282,8 +282,8 @@ Injector.getCurrentInjector().createInstance(Config);
 ### Injectors hierarchy example
 
 There is always `Injector.root` built-in injector, which is global and default if you don't specify else.  
-When you need create new injector, you do `const injector = new Injector(Injector.root)` if you want to create child injector  
-or `const injector = new Injector()` if you need completely detached injector.  
+When you need create new injector, you do `const injector = new Injector("name", Injector.root)` if you want to create child injector  
+or `const injector = new Injector("name")` if you need completely detached injector.  
 All tokens and instances, which are knowns in parent - will be visible for child injector.  
 If injector was asked to create instance for some token - it will immediately return ready-to-use instance, if such exists in internal cache.  
 If doesn't exists - we look for definition, if current injector can construct new instance. If can - constructs, if cannot - delegates the call to parent injector.  

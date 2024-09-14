@@ -1,14 +1,15 @@
 import { Functions, Objects, Types } from "@stnekroman/tstools";
+import { CircularDetector } from "./CircularDetector";
 import { InjectorError } from "./InjectorError";
 import { getInversityMethodMetadata } from './metadata';
 import { Token } from './Token';
 import { TokenMetadata, TokenMetadataOpions } from "./TokenMetadata";
-import { TokenType } from "./TokenType";
+import { TokenProviderType } from "./TokenProviderType";
 
 
 export class Injector {
 
-  public static readonly root = new Injector();
+  public static readonly root = new Injector("root");
   private static currentInjector : Injector;
   public static getCurrentInjector() : Injector {
     return Injector.currentInjector ?? Injector.root;
@@ -16,7 +17,11 @@ export class Injector {
 
   private readonly metadataCache = new Map<unknown, TokenMetadata<unknown>[]>();
 
-  constructor(private readonly parent ?: Injector) {}
+  constructor(public readonly name : string, private readonly parent ?: Injector) {}
+
+  public toString() {
+    return "Injector[" + this.name + "]";
+  }
 
   public register<T>(token : NonNullable<unknown>, options : TokenMetadataOpions<T>) {
     const metadata = new TokenMetadata(options);
@@ -32,22 +37,24 @@ export class Injector {
     }
   }
 
-  public get<T>(token: Token & {multi : false}) : T;
-  public get<T>(token: Token & {multi : true}) : T[];
-  public get<T>(token: unknown) : T;
-  get<T>(token: unknown | Token) : T | T[] {
+  public get<T>(token: Token & {multi : false}, circularDetector ?: CircularDetector) : T;
+  public get<T>(token: Token & {multi : true}, circularDetector ?: CircularDetector) : T[];
+  public get<T>(token: unknown, circularDetector ?: CircularDetector) : T;
+  get<T>(token: unknown | Token, circularDetector ?: CircularDetector) : T | T[] {
     let instances :  T[] | undefined;
+    circularDetector ??= new CircularDetector();
 
     const isMultiple = Injector.isMultiToken(token);
     const tokenValue = Injector.getTokenValue(token);
     const metadatas = this.metadataCache.get(tokenValue) as TokenMetadata<T>[] | undefined;
     if (metadatas && metadatas.length > 0) {
-      instances = metadatas.map(metadata => metadata.get(this));
+      circularDetector.handleToken(tokenValue);
+      instances = this.getInstancesFromMetadatas(metadatas, circularDetector);
     } else if (this.parent) {
       if (isMultiple) {
-        instances = this.parent.get<T>(token);
+        instances = this.parent.get<T>(token, circularDetector);
       } else {
-        instances = [this.parent.get<T>(token)];
+        instances = [this.parent.get<T>(token, circularDetector)];
       }
     }
 
@@ -68,22 +75,37 @@ export class Injector {
     return Objects.isFunction(tokenValue) ? tokenValue.name : (tokenValue as any).toString();
   }
 
-  public getAll<R extends unknown[]>(tokens : (unknown | Token)[]) : R {
-    return tokens.map(t => this.get(t)) as R;
+  private getInstancesFromMetadatas<T>(metadatas : TokenMetadata<T>[], circularDetector ?: CircularDetector) : T[] {
+    if (metadatas.length === 1) {
+      return [metadatas[0].get(this, circularDetector)];
+    } else {
+      return metadatas.map(metadata => metadata.get(this, new CircularDetector(circularDetector)));
+    }
+  }
+
+  public getAll<R extends unknown[]>(tokens : (unknown | Token)[], circularDetector ?: CircularDetector) : R {
+    if (tokens.length === 1) {
+      return [this.get(tokens[0], circularDetector)] as R;
+    } else {
+      return tokens.map(t => this.get(t, new CircularDetector(circularDetector))) as R;
+    }
   }
 
   public createInstance<T>(constructor : Types.Newable<T>) : T;
-  public createInstance<T>(constructor : Types.Newable<T>, type : TokenType.CLASS) : T;
-  public createInstance<T>(factory : Functions.ArgsFunction<unknown[], T>, type : TokenType.FACTORY, dependencies?: unknown[]) : T;
+  public createInstance<T>(constructor : Types.Newable<T>, options : { type : TokenProviderType.CLASS, circularDetector ?: CircularDetector }) : T;
+  public createInstance<T>(factory : Functions.ArgsFunction<any[], T>, options : { type : TokenProviderType.FACTORY, dependencies?: unknown[], circularDetector ?: CircularDetector}) : T;
   createInstance<T>(
     constructorOrFactory : Types.Newable<T> | Functions.ArgsFunction<unknown[], T>,
-    type : TokenType.CLASS | TokenType.FACTORY = TokenType.CLASS,
-    dependencies?: unknown[]
+    options ?: {
+      type : TokenProviderType.CLASS | TokenProviderType.FACTORY,
+      dependencies?: unknown[],
+      circularDetector ?: CircularDetector
+    }    
   ) : T {
-    const parameterTokens = dependencies ?? this.collectDependencies(constructorOrFactory);
-    const parameters = this.getAll(parameterTokens);
-
-    if (type === TokenType.CLASS) {
+    const type : TokenProviderType = options?.type ?? TokenProviderType.CLASS;
+    const parameterTokens = options?.dependencies ?? this.collectDependencies(constructorOrFactory);
+    const parameters = this.getAll(parameterTokens, options?.circularDetector);
+    if (type === TokenProviderType.CLASS) {
       return new (constructorOrFactory as Types.Newable<T>)(...parameters);
     } else {
       return (constructorOrFactory as Functions.ArgsFunction<unknown[], T>)(...parameters);

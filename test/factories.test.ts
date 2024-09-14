@@ -1,13 +1,13 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { Inject, Injectable, Injector } from "../src";
+import { Inject, Injectable, Injector, TokenProviderType } from "../src";
 
 describe("factories", () => {
 
   let testInjector : Injector;
 
   beforeEach(() => {
-    testInjector = new Injector();
+    testInjector = new Injector("test");
   });
 
   test("factory token", () => {
@@ -54,4 +54,19 @@ describe("factories", () => {
       expect(ins).toBeDefined();
     });
   });
+
+  test("factory token via factor createInstance", () => testInjector.runInContext(() => {
+    const valueToken = Injectable("TEST_TOKEN", {
+      factory: () => "aval"
+    });
+
+    testInjector.createInstance((value1 : string, value2 : string) => {
+      expect(value1).toBe("aval");
+      expect(value2).toBe("aval");
+    }, {
+      type: TokenProviderType.FACTORY,
+      dependencies: ["TEST_TOKEN", valueToken]
+    });
+  }));
+
 });

@@ -3,7 +3,7 @@ import { Injector } from '../Injector';
 import { InjectorError } from "../InjectorError";
 import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadata";
 import { TokenScope } from "../TokenMetadata";
-import { TokenType } from "../TokenType";
+import { TokenProviderType } from "../TokenProviderType";
 
 
 type InjectableOptions = {
@@ -30,7 +30,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
   const injector = options?.injector ?? Injector.getCurrentInjector();
   if (options && options.class && Objects.isNotNullOrUndefined(token)) {
     injector.register(token, {
-      type: TokenType.CLASS,
+      type: TokenProviderType.CLASS,
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
@@ -41,7 +41,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     return token;
   } else if (options && options.factory && Objects.isNotNullOrUndefined(token)) {
     injector.register(token, {
-      type: TokenType.FACTORY,
+      type: TokenProviderType.FACTORY,
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
@@ -53,7 +53,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     return token;
   } else if (options && options.value && Objects.isNotNullOrUndefined(token)) {
     injector.register(token, {
-      type: TokenType.VALUE,
+      type: TokenProviderType.VALUE,
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
@@ -64,7 +64,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
     return token;
   } else if (options && options.redirect && Objects.isNotNullOrUndefined(token)) {
     injector.register(token, {
-      type: TokenType.REDIRECT,
+      type: TokenProviderType.REDIRECT,
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
@@ -78,7 +78,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
       if (methodName === undefined) {
         // class decorator
         injector.register(token ?? target, {
-          type: TokenType.CLASS,
+          type: TokenProviderType.CLASS,
           tags: options?.tags,
           multi: options?.multi,
           scope: options?.scope,
@@ -103,7 +103,7 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
   if (Objects.isFunction(target)) {
     // static method
     injector.register(token, {
-      type: TokenType.FACTORY,
+      type: TokenProviderType.FACTORY,
       tags: options?.tags,
       multi: options?.multi,
       scope: options?.scope,
@@ -114,7 +114,7 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
   } else {
     const inversityMetadata : InversityMetadata<typeof target> = getOrCreateInversityClassMetadata(target);
     inversityMetadata.deferInstanceInjectables[methodName] = [token, {
-      type: TokenType.FACTORY,
+      type: TokenProviderType.FACTORY,
       tags: options?.tags,
       injector: injector,
       multi: options?.multi,

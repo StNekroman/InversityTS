@@ -7,7 +7,7 @@ describe("simple tests", () => {
   let testInjector : Injector;
 
   beforeEach(() => {
-    testInjector = new Injector();
+    testInjector = new Injector("test");
   });
 
   test("simple case", () => {

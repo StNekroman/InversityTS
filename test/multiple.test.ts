@@ -8,7 +8,7 @@ describe("multiple injectables", () => {
   let testInjector : Injector;
 
   beforeEach(() => {
-    testInjector = new Injector();
+    testInjector = new Injector("test");
   });
 
   test("redirect", () => testInjector.runInContext(() => {

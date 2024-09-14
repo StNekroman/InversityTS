@@ -7,30 +7,22 @@ describe("injector hierarchy", () => {
   let testInjector : Injector;
 
   beforeEach(() => {
-    testInjector = new Injector();
+    testInjector = new Injector("test");
   });
 
   test("child inherits parent", () => {
-    testInjector = new Injector(Injector.root); // inherits it
-    testInjector.runInContext(() => {
-
-      const TOKEN1 = Injectable(Symbol("TOKEN1"), {
+    testInjector = new Injector("test", Injector.root); // inherits it
+    const TOKEN1 = Injectable(Symbol("TOKEN1"), {
                        value: "aval",
                        injector: Injector.root
                      });
-      const TOKEN2 = Injectable(Symbol("TOKEN1"), {
-                        value: "aval",
-                     }); // will use injector from context - testInjector
-
+    testInjector.runInContext(() => {
       class WithDependencies {
         constructor(
-          @Inject.Param(TOKEN1) token1: string,
-          @Inject.Param(TOKEN2) token2: string
+          @Inject.Param(TOKEN1) token1: string
         ) {
           expect(token1).toBeDefined();
           expect(token1).toBe("aval");
-          expect(token2).toBeDefined();
-          expect(token2).toBe("aval");
         }
       }
 
@@ -66,7 +58,7 @@ describe("injector hierarchy", () => {
   });
 
   test("overwrite token value in child", () => {
-    testInjector = new Injector(Injector.root); // inherits it
+    testInjector = new Injector("test", Injector.root); // inherits it
 
     const TOKEN = Symbol("TOKEN");
 

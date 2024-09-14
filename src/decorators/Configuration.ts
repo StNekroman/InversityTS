@@ -1,7 +1,7 @@
 import { Objects, SingletonGuard, Types } from "@stnekroman/tstools";
 import { InjectorError } from "../InjectorError";
 import { getInversityMethodMetadata, getOrCreateInversityClassMetadata, InversityMetadata, MethodMetadata } from '../metadata';
-import { TokenType } from "../TokenType";
+import { TokenProviderType } from "../TokenProviderType";
 import { Injectable } from "./Injectable";
 
 export function Configuration<C>() {
@@ -15,7 +15,7 @@ export function Configuration<C>() {
         super();
 
         Objects.forEach(inversityMetadata.deferInstanceInjectables, (methodName, [token, options]) => {
-          if (options.type ===  TokenType.FACTORY) {
+          if (options.type ===  TokenProviderType.FACTORY) {
             const methodMetadata : MethodMetadata | undefined = getInversityMethodMetadata((this as any)[methodName])
             Injectable(token, {
               injector: options.injector,
