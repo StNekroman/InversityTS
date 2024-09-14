@@ -15,8 +15,7 @@ Injectors serve function of IoC containers.
 - Has circular dependency detection
 - Supports @Configuration classes
 - Supprots different value providers for injectable
-
-This library doesn't use reflect-metadata, the solution is prototype-based.
+- This library doesn't use reflect-metadata, the solution is prototype-based.
 
 ## Table of Contents
 
