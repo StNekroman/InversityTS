@@ -1,7 +1,7 @@
 import { Types } from "@stnekroman/tstools";
 import { Injector } from "../Injector";
 import { getOrCreateInversityMethodMetadata, MethodMetadata } from '../metadata';
-import { Token } from "../Token";
+import { Token, TokenType } from "../Token";
 
 
 export interface Inject {
@@ -9,8 +9,8 @@ export interface Inject {
 }
 
 export function Inject<T>(token : Types.Newable<T>, injector ?: Injector) : T;
-export function Inject<T = unknown>(token : unknown, injector ?: Injector) : T;
-export function Inject(token : unknown | Token, injector = Injector.getCurrentInjector()) : unknown {
+export function Inject<T = unknown>(token : TokenType | Token, injector ?: Injector) : T;
+export function Inject(token : TokenType | Token, injector = Injector.getCurrentInjector()) : unknown {
   return injector.get(token);
 }
 

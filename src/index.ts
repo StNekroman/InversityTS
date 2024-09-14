@@ -4,7 +4,7 @@ export { ForwardRef } from "./ForwardRef";
 export { Injector } from "./Injector";
 export { InjectorError } from "./InjectorError";
 export * from "./scope";
-export { Token } from "./Token";
+export { Token, TokenType } from "./Token";
 export { TokenScope } from "./TokenMetadata";
 export { TokenProviderType } from "./TokenProviderType";
 

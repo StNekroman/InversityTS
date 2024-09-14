@@ -1,10 +1,10 @@
 import { Injector } from "./Injector";
 import { TokenProviderType } from "./TokenProviderType";
-import { Token } from './Token';
+import { Token, TokenType } from './Token';
 import { TokenScope } from "./TokenMetadata";
 
 
-export type deferInstancePair = [unknown, {
+export type deferInstancePair = [TokenType, {
   type: TokenProviderType;
   tags?: string[];
   injector ?: Injector;
@@ -17,7 +17,7 @@ export interface InversityMetadata<C> {
 }
 
 export interface MethodMetadata {
-  parameters: (unknown | Token)[];
+  parameters: (TokenType | Token)[];
 }
 
 export const InversityMetadataSymbol = Symbol("InversityMetadata");

@@ -4,7 +4,9 @@ export namespace Token {
   }
 }
 
-export class Token<T = unknown> {
+export type TokenType = NonNullable<unknown>;
+
+export class Token<T extends TokenType = TokenType> {
   
   public readonly multi : boolean;
 

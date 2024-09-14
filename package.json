@@ -35,7 +35,7 @@
     "npm-publish-github": "npm publish --access public --registry=https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@stnekroman/tstools": "0.0.8"
+    "@stnekroman/tstools": "0.0.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

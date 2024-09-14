@@ -3,18 +3,19 @@ import { CircularDetector } from "./CircularDetector";
 import { ForwardRef } from "./ForwardRef";
 import { Injector } from "./Injector";
 import { InjectorError } from "./InjectorError";
-import { TokenProviderType } from "./TokenProviderType";
 import { CachingScopeProvider } from "./scope/CachingScopeProvider";
 import { PrototypeScopeProvider } from "./scope/PrototypeScopeProvider";
 import { ScopeProvider } from "./scope/ScopeProvider";
 import { SingletonScopeProvider } from "./scope/SingletonScopeProvider";
+import { Token, TokenType } from "./Token";
+import { TokenProviderType } from "./TokenProviderType";
 
 export interface TokenProvider<T> {
   class ?: Types.Newable<T>;
   factory ?: Functions.ArgsFunction<unknown[], T>;
-  dependencies ?: unknown[];
+  dependencies ?: (TokenType | Token)[];
   value ?: T;
-  redirect ?: unknown;
+  redirect ?: TokenType;
 }
 
 export type TokenScope<T = unknown> = "singleton" | "prototype" | Functions.Provider<string> | Types.Newable<ScopeProvider<T>>;

@@ -2,6 +2,7 @@ import { Functions, Objects, Types } from "@stnekroman/tstools";
 import { Injector } from '../Injector';
 import { InjectorError } from "../InjectorError";
 import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadata";
+import { Token, TokenType } from "../Token";
 import { TokenScope } from "../TokenMetadata";
 import { TokenProviderType } from "../TokenProviderType";
 
@@ -13,19 +14,19 @@ type InjectableOptions = {
   scope ?: TokenScope;
 }
 
-export function Injectable<T>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
-export function Injectable<T,ARGS extends unknown[]>(token: T, options : InjectableOptions & {factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: unknown[]}) : T;
-export function Injectable<T>(token: T, options : InjectableOptions & {value : unknown}) : T;
-export function Injectable<T>(token: T, options : InjectableOptions & {redirect : unknown}) : T;
+export function Injectable<T extends TokenType>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
+export function Injectable<T extends TokenType, ARGS extends unknown[]>(token: T, options : InjectableOptions & {factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: (TokenType | Token)[]}) : T;
+export function Injectable<T extends TokenType>(token: T, options : InjectableOptions & {value : unknown}) : T;
+export function Injectable<T extends TokenType>(token: T, options : InjectableOptions & {redirect : TokenType}) : T;
 
-export function Injectable<T>(token?: T, options ?: InjectableOptions) : ClassDecorator & MethodDecorator;
+export function Injectable<T extends TokenType>(token?: T, options ?: InjectableOptions) : ClassDecorator & MethodDecorator;
 
-export function Injectable<T>(token : T | undefined, options ?: InjectableOptions & {
+export function Injectable<T extends TokenType>(token : T | undefined, options ?: InjectableOptions & {
   class ?: Types.Newable,
   factory ?: Functions.ArgsFunction<unknown[], unknown>,
-  dependencies?: unknown[],
+  dependencies?: (TokenType | Token)[],
   value ?: unknown,
-  redirect ?: unknown
+  redirect ?: TokenType
 }) : T | ClassDecorator | MethodDecorator {
   const injector = options?.injector ?? Injector.getCurrentInjector();
   if (options && options.class && Objects.isNotNullOrUndefined(token)) {
@@ -97,7 +98,7 @@ export function Injectable<T>(token : T | undefined, options ?: InjectableOption
 }
 
 function handleInjectableMethodDecorator(target: any, methodName: keyof typeof target, descriptor : PropertyDescriptor, 
-      token: NonNullable<unknown>,
+      token: TokenType,
       options ?: InjectableOptions) {
   const injector = options?.injector ?? Injector.getCurrentInjector();
   if (Objects.isFunction(target)) {
