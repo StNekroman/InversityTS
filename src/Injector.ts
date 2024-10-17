@@ -42,7 +42,7 @@ export class Injector {
   public get<T>(token: TokenType, circularDetector ?: CircularDetector) : T;
   get<T>(token: TokenType | Token, circularDetector ?: CircularDetector) : T | T[] {
     let instances :  T[] | undefined;
-    circularDetector ??= new CircularDetector(this);
+    circularDetector ??= new CircularDetector(this.toString());
 
     const isMultiple = Injector.isMultiToken(token);
     const tokenValue = Injector.getTokenValue(token);
@@ -79,7 +79,7 @@ export class Injector {
     if (metadatas.length === 1) {
       return [metadatas[0].get(this, circularDetector)];
     } else {
-      return metadatas.map(metadata => metadata.get(this, new CircularDetector(this, circularDetector)));
+      return metadatas.map(metadata => metadata.get(this, new CircularDetector(this.toString(), circularDetector)));
     }
   }
 
@@ -87,7 +87,7 @@ export class Injector {
     if (tokens.length === 1) {
       return [this.get(tokens[0], circularDetector)] as R;
     } else {
-      return tokens.map(t => this.get(t, new CircularDetector(this, circularDetector))) as R;
+      return tokens.map(t => this.get(t, new CircularDetector(this.toString(), circularDetector))) as R;
     }
   }
 

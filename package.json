@@ -1,6 +1,6 @@
 {
   "name": "@stnekroman/inversityts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "IoC library for TypeScript",
   "license": "MIT",
   "main": "./dist/src/index.js",
