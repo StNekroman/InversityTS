@@ -10,6 +10,7 @@ export type deferInstancePair = [TokenType, {
   injector ?: Injector;
   multi ?: boolean;
   scope ?: TokenScope;
+  weak ?: boolean;
 }];
 
 export interface InversityMetadata<C> {

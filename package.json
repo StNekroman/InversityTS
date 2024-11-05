@@ -1,6 +1,6 @@
 {
   "name": "@stnekroman/inversityts",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "IoC library for TypeScript",
   "license": "MIT",
   "main": "./dist/src/index.js",
@@ -35,7 +35,7 @@
     "npm-publish-github": "npm publish --access public --registry=https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@stnekroman/tstools": "0.0.9"
+    "@stnekroman/tstools": "0.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

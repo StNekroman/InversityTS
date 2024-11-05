@@ -104,15 +104,18 @@ Can be called:
 
 List of possible scopes:
 
-| Scope                 | Description                                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `singleton` (default) | Only one instance is create for injectable, cached and shared for future injects                               |
-| `prototype`           | Each new inject call will cause new instance to be created                                                     |
-| `cache`               | Internal caching map will be used, you need only specify provider, which will provide string keys to that map. |
-|                       | On key change - new instance will be created. In order to active this scope mode you need just pass in         |
-|                       | a function `() => string`, cache key provider                                                                  |
-| `custom`              | That is possible to completely override logic of scoping and instances creation.                               |
-|                       | Via passing in class `extends ScopeProvider`.                                                                  |
+| Scope                 | Description                                                                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `singleton` (default) | Only one instance is create for injectable, cached and shared for future injects                                                   |
+| `prototype`           | Each new inject call will cause new instance to be created                                                                         |
+| `cache`               | Internal caching map will be used, you need only specify provider, which will provide string keys to that map.                     |
+|                       | On key change - new instance will be created. In order to active this scope mode you need just pass in                             |
+|                       | a function `() => string`, cache key provider                                                                                      |
+| `weak`                | Optional param, which is in use onlye in case of using caching scope.                                                              |
+|                       | When set to `true` - internal cache will hold WeakRefs, which won't prevent garbage collector from collecting such references.     |
+|                       | So weak caching scope can be used when we don't want to keep created instance in memory, if that is not used (referenced) already. |
+| `custom`              | That is possible to completely override logic of scoping and instances creation.                                                   |
+|                       | Via passing in class `extends ScopeProvider`.                                                                                      |
 
 ### @Inject
 

@@ -5,14 +5,21 @@ import { getOrCreateInversityClassMetadata, InversityMetadata } from "../metadat
 import { Token, TokenType } from "../Token";
 import { TokenScope } from "../TokenMetadata";
 import { TokenProviderType } from "../TokenProviderType";
+import { ScopeProvider } from "../scope";
 
+
+type InjectableOptionsWithWeakScope = {
+  scope : Functions.Provider<string>;
+  weak ?: boolean;
+}
 
 type InjectableOptions = {
   injector ?: Injector;
   tags ?: string[];
   multi ?: boolean;
+} & ({
   scope ?: TokenScope;
-}
+} | InjectableOptionsWithWeakScope)
 
 export function Injectable<T extends TokenType>(token: T, options : InjectableOptions & {class : Types.Newable}) : T;
 export function Injectable<T extends TokenType, ARGS extends unknown[]>(token: T, options : InjectableOptions & {factory : Functions.ArgsFunction<ARGS, unknown>, dependencies?: (TokenType | Token)[]}) : T;
@@ -29,12 +36,15 @@ export function Injectable<T extends TokenType>(token : T | undefined, options ?
   redirect ?: TokenType
 }) : T | ClassDecorator | MethodDecorator {
   const injector = options?.injector ?? Injector.getCurrentInjector();
+  const weak = isWeakFromOptions(options);
+
   if (options && options.class && Objects.isNotNullOrUndefined(token)) {
     injector.register(token, {
       type: TokenProviderType.CLASS,
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
+      weak: weak,
       provider: {
         class: options.class
       }
@@ -46,6 +56,7 @@ export function Injectable<T extends TokenType>(token : T | undefined, options ?
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
+      weak: weak,
       provider: {
         factory: options.factory,
         dependencies: options.dependencies
@@ -58,6 +69,7 @@ export function Injectable<T extends TokenType>(token : T | undefined, options ?
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
+      weak: weak,
       provider: {
         value: options.value
       }
@@ -69,6 +81,7 @@ export function Injectable<T extends TokenType>(token : T | undefined, options ?
       tags: options.tags,
       multi: options.multi,
       scope: options.scope,
+      weak: weak,
       provider: {
         redirect: options.redirect
       }
@@ -83,6 +96,7 @@ export function Injectable<T extends TokenType>(token : T | undefined, options ?
           tags: options?.tags,
           multi: options?.multi,
           scope: options?.scope,
+          weak: weak,
           provider: {
             class: target
           }
@@ -101,6 +115,7 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
       token: TokenType,
       options ?: InjectableOptions) {
   const injector = options?.injector ?? Injector.getCurrentInjector();
+  const weak = isWeakFromOptions(options);
   if (Objects.isFunction(target)) {
     // static method
     injector.register(token, {
@@ -108,6 +123,7 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
       tags: options?.tags,
       multi: options?.multi,
       scope: options?.scope,
+      weak: weak,
       provider: {
         factory: descriptor.value as Functions.ArgsFunction<unknown[], unknown>
       }
@@ -119,7 +135,16 @@ function handleInjectableMethodDecorator(target: any, methodName: keyof typeof t
       tags: options?.tags,
       injector: injector,
       multi: options?.multi,
-      scope: options?.scope
+      scope: options?.scope,
+      weak: weak
     }];
+  }
+}
+
+function isWeakFromOptions<T>(options ?: InjectableOptions) : boolean {
+  if (Objects.isFunction(options?.scope) && !Objects.isConstructorOf<ScopeProvider<T>>(options.scope, ScopeProvider as Types.Newable<ScopeProvider<T>>)) {
+    return Boolean((options as InjectableOptionsWithWeakScope).weak);
+  } else {
+    return false;
   }
 }

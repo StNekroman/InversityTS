@@ -22,7 +22,9 @@ export function Configuration<C>() {
               tags: options.tags,
               multi: options.multi,
               factory: (this[methodName as keyof ThisType<C>] as Function).bind(this),
-              dependencies: methodMetadata?.parameters ?? []
+              dependencies: methodMetadata?.parameters ?? [],
+              scope: options?.scope,
+              weak: options?.weak
             });
           } else {
             throw new InjectorError("Unsupported type for defer inject");
